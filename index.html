@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>チャットdeメール — もうメールを見落とさない</title>
+  <meta name="description" content="メールを件名の一覧ではなく、やり取りしている相手ごとにチャットのように並べるiPhoneアプリ。開発者のサーバーがないので、あなたのメールは開発者にも見えません。Gmail・Yahoo!メール・iCloudに対応。">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="チャットdeメール — もうメールを見落とさない">
+  <meta property="og:description" content="メールを相手ごとにチャットのように並べるiPhoneアプリ。開発者にもメールは見えません。">
+  <meta property="og:url" content="https://haruki-lo-shelon.github.io/chatdemail/">
+  <meta property="og:image" content="https://haruki-lo-shelon.github.io/chatdemail/images/ogp.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="images/icon.png">
+  <link rel="apple-touch-icon" href="images/icon.png">
+  <meta name="apple-itunes-app" content="app-id=6824238650">
+  <style>
+    :root {
+      --blue: #1F5FA8;
+      --blue-dark: #174a85;
+      --orange: #E8541E;
+      --text: #1f2328;
+      --sub: #59636e;
+      --bg: #ffffff;
+      --bg-soft: #f3f6fa;
+      --line: #e3e8ef;
+      --card: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --blue: #5b9be0;
+        --blue-dark: #4785cc;
+        --orange: #ff7a45;
+        --text: #e8ecf1;
+        --sub: #a3aebb;
+        --bg: #0f1419;
+        --bg-soft: #161d25;
+        --line: #26303b;
+        --card: #1a222c;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", Meiryo, sans-serif;
+      line-height: 1.8;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--blue); }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+    section { padding: 64px 0; }
+    section.soft { background: var(--bg-soft); }
+    h2 {
+      font-size: 1.6rem;
+      line-height: 1.4;
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+    .lead { color: var(--sub); margin-bottom: 32px; }
+
+    /* ヒーロー */
+    .hero {
+      background: linear-gradient(160deg, #2a6fbd 0%, #1F5FA8 45%, #163f72 100%);
+      color: #fff;
+      padding: 56px 0 0;
+      overflow: hidden;
+    }
+    .hero .wrap { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 32px; align-items: end; }
+    .hero-text { padding-bottom: 64px; }
+    .app-id { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+    .app-id img { width: 56px; height: 56px; border-radius: 13px; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+    .app-id span { font-weight: 700; font-size: 1.1rem; }
+    .hero h1 { font-size: 2.8rem; line-height: 1.25; margin-bottom: 16px; letter-spacing: 0.02em; }
+    .hero p { font-size: 1.05rem; opacity: .92; margin-bottom: 28px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #000; color: #fff; text-decoration: none;
+      padding: 12px 22px; border-radius: 12px; font-weight: 700;
+      border: 1px solid rgba(255,255,255,.35);
+    }
+    .btn svg { width: 22px; height: 22px; fill: #fff; }
+    .btn:hover { background: #222; }
+    .price-note { font-size: .88rem; opacity: .85; margin-top: 12px; }
+    .hero-shot { display: flex; justify-content: center; }
+    /* 紹介画像の上の見出し部分は本文と重なるので、iPhoneの部分だけを見せる */
+    .hero-shot img {
+      width: 100%; max-width: 330px; display: block;
+      aspect-ratio: 660 / 1090; object-fit: cover; object-position: bottom;
+    }
+
+    /* 画面写真 */
+    .shots {
+      display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
+      padding-bottom: 12px;
+    }
+    .shots img {
+      width: 220px; flex: 0 0 auto; border-radius: 16px; scroll-snap-align: start;
+      box-shadow: 0 2px 12px rgba(0,0,0,.12);
+    }
+
+    /* 特長 */
+    .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .feature {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px;
+    }
+    .feature h3 { font-size: 1.1rem; margin-bottom: 8px; line-height: 1.5; }
+    .feature p { color: var(--sub); font-size: .95rem; }
+    .feature .num {
+      display: inline-block; font-weight: 700; color: var(--orange); font-size: .85rem; margin-bottom: 6px;
+    }
+
+    /* しくみ */
+    .mechanism { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; }
+    .diagram { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+    .diagram svg { width: 100%; height: auto; display: block; }
+    .checks { list-style: none; }
+    .checks li { padding-left: 32px; position: relative; margin-bottom: 14px; }
+    .checks li::before {
+      content: ""; position: absolute; left: 0; top: 4px; width: 20px; height: 20px; border-radius: 50%;
+      background: var(--blue);
+      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='10'/%3E%3C/svg%3E");
+    }
+    .checks li::after {
+      content: ""; position: absolute; left: 6px; top: 8px; width: 8px; height: 5px;
+      border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg);
+    }
+    .checks strong { display: block; }
+    .checks span { color: var(--sub); font-size: .93rem; }
+
+    /* 料金 */
+    .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .plan { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+    .plan.pro { border: 2px solid var(--blue); }
+    .plan h3 { font-size: 1.1rem; }
+    .plan .price { font-size: 1.6rem; font-weight: 700; margin: 4px 0 12px; }
+    .plan .price small { font-size: .9rem; font-weight: 400; color: var(--sub); }
+    .plan ul { padding-left: 1.2rem; color: var(--sub); font-size: .95rem; }
+    .trial {
+      margin-top: 20px; background: var(--card); border: 1px dashed var(--blue); border-radius: 12px;
+      padding: 14px 18px; font-size: .95rem;
+    }
+
+    /* つくった人 */
+    .maker { display: grid; grid-template-columns: 200px 1fr; gap: 32px; }
+    .maker-card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; text-align: center;
+      align-self: start;
+    }
+    .avatar {
+      width: 88px; height: 88px; border-radius: 50%; margin: 0 auto 12px;
+      background: var(--blue); color: #fff; font-size: 2rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .maker-card .name { font-weight: 700; font-size: 1.1rem; }
+    .maker-card .role { color: var(--sub); font-size: .88rem; }
+    .story p { margin-bottom: 16px; }
+    .other-apps { margin-top: 8px; font-size: .95rem; }
+
+    /* 更新履歴・よくある質問 */
+    .history { list-style: none; border-left: 2px solid var(--line); padding-left: 20px; }
+    .history li { margin-bottom: 20px; position: relative; }
+    .history li::before {
+      content: ""; position: absolute; left: -27px; top: 8px; width: 12px; height: 12px; border-radius: 50%;
+      background: var(--blue); border: 2px solid var(--bg);
+    }
+    .history .ver { font-weight: 700; }
+    .history .date { color: var(--sub); font-size: .88rem; margin-left: 8px; }
+    .history p { color: var(--sub); font-size: .95rem; }
+    details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+    summary { cursor: pointer; font-weight: 700; }
+    details p { color: var(--sub); margin-top: 8px; font-size: .95rem; }
+
+    .cta { text-align: center; }
+    .cta .btn { background: var(--blue); border-color: var(--blue); }
+    .cta .btn:hover { background: var(--blue-dark); }
+
+    footer { padding: 32px 0 48px; color: var(--sub); font-size: .88rem; text-align: center; }
+    footer a { margin: 0 8px; }
+
+    @media (max-width: 760px) {
+      section { padding: 48px 0; }
+      .hero { padding-top: 40px; }
+      .hero .wrap { grid-template-columns: 1fr; }
+      .hero-text { padding-bottom: 8px; }
+      .hero h1 { font-size: 2.1rem; }
+      .hero-shot img { max-width: 260px; }
+      .features, .plans, .mechanism, .maker { grid-template-columns: 1fr; }
+      .maker-card { display: flex; align-items: center; gap: 16px; text-align: left; }
+      .avatar { margin: 0; width: 64px; height: 64px; font-size: 1.5rem; flex: 0 0 auto; }
+      .shots img { width: 180px; }
+      h2 { font-size: 1.35rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="wrap">
+      <div class="hero-text">
+        <div class="app-id">
+          <img src="images/icon.png" alt="チャットdeメールのアイコン">
+          <span>チャットdeメール</span>
+        </div>
+        <h1>もうメールを<br>見落とさない</h1>
+        <p>メールを件名の一覧ではなく、やり取りしている相手ごとにチャットのように並べるiPhoneアプリです。だれから、どんな話が来ているのかがひと目でわかります。</p>
+        <a class="btn" href="https://apps.apple.com/jp/app/id6824238650">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.37 12.73c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.75 2.28-1.6 2.78-.41 6.89 1.15 9.14.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.77.74 2.98.72 1.23-.02 2.01-1.12 2.76-2.23.87-1.28 1.23-2.52 1.25-2.58-.03-.01-2.4-.92-2.42-3.66zM14.1 5.98c.63-.77 1.06-1.83.94-2.89-.91.04-2.01.61-2.66 1.37-.58.67-1.09 1.75-.96 2.79 1.02.08 2.05-.52 2.68-1.27z"/></svg>
+          App Storeでダウンロード
+        </a>
+        <p class="price-note">無料で始められます。最初の14日間は、有料プランの機能もすべて使えます。</p>
+      </div>
+      <div class="hero-shot">
+        <img src="images/1-list.jpg" alt="相手ごとにメールが並ぶ一覧の画面">
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <h2>できること</h2>
+      <p class="lead">人からの大事なメールが、お知らせやメルマガに埋もれません。</p>
+      <div class="features">
+        <div class="feature">
+          <span class="num">01</span>
+          <h3>メールを相手ごとに、チャットのように</h3>
+          <p>同じ相手とのメールを1つの会話にまとめ、自分が送ったメールも一緒に吹き出しで並べます。返信もその場で書けます。</p>
+        </div>
+        <div class="feature">
+          <span class="num">02</span>
+          <h3>自動送信のメールは別のタブへ</h3>
+          <p>メルマガ・お知らせ・通知は「自動送信」のタブに分けます。「人」のタブには、人からのメールだけが並びます。</p>
+        </div>
+        <div class="feature">
+          <span class="num">03</span>
+          <h3>Gmail・Yahoo!メール・iCloudに対応</h3>
+          <p>IMAPに対応したメールなら使えます。複数のアカウントを追加して、すぐに切り替えられます。</p>
+        </div>
+      </div>
+      <div class="shots" style="margin-top:32px">
+        <img src="images/2-chat.jpg" alt="相手とのメールが吹き出しで並ぶ会話の画面" loading="lazy">
+        <img src="images/3-automated.jpg" alt="自動送信のメールを分けたタブ" loading="lazy">
+        <img src="images/4-accounts.jpg" alt="複数のアカウントを切り替える画面" loading="lazy">
+        <img src="images/5-privacy.jpg" alt="開発者にもメールが見えないしくみ" loading="lazy">
+      </div>
+    </div>
+  </section>
+
+  <section class="soft" id="privacy">
+    <div class="wrap">
+      <h2>開発者にも、あなたのメールは見えません</h2>
+      <p class="lead">メールアプリに大事なアカウントを預けるのは、不安なものです。だから、預からなくていい作りにしました。</p>
+      <div class="mechanism">
+        <div class="diagram">
+          <svg viewBox="0 0 400 260" role="img" aria-label="iPhoneがメールサーバーに直接つながり、開発者のサーバーは通らない図">
+            <defs>
+              <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="#1F5FA8"/>
+              </marker>
+            </defs>
+            <!-- iPhone -->
+            <rect x="20" y="70" width="90" height="150" rx="16" fill="none" stroke="currentColor" stroke-width="3" style="color:var(--text)"/>
+            <rect x="48" y="80" width="34" height="8" rx="4" fill="currentColor" style="color:var(--text)"/>
+            <text x="65" y="150" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor" style="color:var(--text)">iPhone</text>
+            <text x="65" y="172" text-anchor="middle" font-size="11" fill="currentColor" style="color:var(--sub)">パスワードは</text>
+            <text x="65" y="188" text-anchor="middle" font-size="11" fill="currentColor" style="color:var(--sub)">この中だけ</text>
+            <!-- メールサーバー -->
+            <rect x="270" y="110" width="115" height="70" rx="10" fill="#1F5FA8"/>
+            <text x="327" y="140" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">メールサーバー</text>
+            <text x="327" y="160" text-anchor="middle" font-size="10.5" fill="#fff">Gmail・iCloudなど</text>
+            <!-- 直接の矢印 -->
+            <line x1="115" y1="145" x2="264" y2="145" stroke="#1F5FA8" stroke-width="3" marker-end="url(#arr)" marker-start="url(#arr)"/>
+            <text x="190" y="135" text-anchor="middle" font-size="12" font-weight="700" fill="#1F5FA8">直接つながる</text>
+            <!-- 開発者のサーバー（なし） -->
+            <rect x="140" y="20" width="110" height="52" rx="10" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="6 5" style="color:var(--sub)"/>
+            <text x="195" y="51" text-anchor="middle" font-size="12" fill="currentColor" style="color:var(--sub)">開発者のサーバー</text>
+            <line x1="148" y1="26" x2="242" y2="66" stroke="#E8541E" stroke-width="3"/>
+            <line x1="242" y1="26" x2="148" y2="66" stroke="#E8541E" stroke-width="3"/>
+            <text x="195" y="96" text-anchor="middle" font-size="11.5" font-weight="700" fill="#E8541E">そもそも、ありません</text>
+          </svg>
+        </div>
+        <ul class="checks">
+          <li><strong>開発者のサーバーがない</strong><span>iPhoneがGmailやiCloudなどのメールサーバーへ直接メールを取りに行きます。メールもパスワードも、開発者を含めてほかのだれの手元も通りません。</span></li>
+          <li><strong>パスワードはiPhoneの中だけ</strong><span>ログインに使うアプリ用パスワードは、iPhoneのキーチェーンにだけ保存します。</span></li>
+          <li><strong>分析・広告のしくみも入れていない</strong><span>App Storeの「Appのプライバシー」も「データの収集なし」です。</span></li>
+          <li><strong>ふだんのパスワードは使わない</strong><span>Gmail・iCloudは、このアプリ専用の「アプリ用パスワード」でログインします。不要になれば、いつでもそのパスワードだけを取り消せます。</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>料金</h2>
+      <p class="lead">無料のままでも、最近のやり取りを見落とさずに使えます。</p>
+      <div class="plans">
+        <div class="plan">
+          <h3>無料プラン</h3>
+          <div class="price">0円</div>
+          <ul>
+            <li>最近30日にやり取りした相手を一覧に表示</li>
+            <li>ピン留め1件、アカウント1つまで</li>
+            <li>昔のメールへのさかのぼりと、メールサーバーの検索は使えます</li>
+          </ul>
+        </div>
+        <div class="plan pro">
+          <h3>有料プラン</h3>
+          <div class="price">月額200円 <small>／ 年額2,000円</small></div>
+          <ul>
+            <li>昔にやり取りした相手まで、期間の制限なく一覧に表示</li>
+            <li>ピン留めとアカウントの数は制限なし</li>
+          </ul>
+        </div>
+      </div>
+      <p class="trial">はじめてアカウントを追加した日から14日間は、有料プランと同じ機能を無料で使えます。解約はiPhoneの「設定」からいつでもできます。</p>
+    </div>
+  </section>
+
+  <section class="soft" id="maker">
+    <div class="wrap">
+      <h2>つくった人</h2>
+      <p class="lead">個人で開発・運営しています。</p>
+      <div class="maker">
+        <div class="maker-card">
+          <div class="avatar">河</div>
+          <div>
+            <div class="name">河﨑 晴己</div>
+            <div class="role">Haruki Kawasaki<br>Webエンジニア</div>
+          </div>
+        </div>
+        <div class="story">
+          <p>Webエンジニアとして働きながら、個人でもアプリを作っています。</p>
+          <p>このアプリを作ったのは、私自身がメールをよく見落としていたからです。件名がずらっと並ぶ受信トレイでは、人からの大事なメールが、お知らせやメルマガの間に埋もれてしまいます。「相手ごとに並べてくれればいいのに」と思って探すと、代表的なアプリは英語が中心で、料金は月2,500円ほど。無料のプランもありませんでした。</p>
+          <p>それなら、日本語で迷わず使えて、Gmail以外のメールにも対応し、毎月気軽に払える値段のものを自分で作ろう、と決めました。毎日自分でも使いながら、改良を続けています。</p>
+          <p class="other-apps">ほかに作ったアプリ：<a href="https://apps.apple.com/jp/app/id6760740554">GuideAnywhere AI（どこでもガイド）</a> — 今いる場所の解説を、AIが音声で読み上げる旅行ガイド</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>更新履歴</h2>
+      <p class="lead">自分で毎日使いながら気づいたことをもとに、改良を続けています。</p>
+      <ul class="history">
+        <li>
+          <span class="ver">バージョン 1.0.1</span><span class="date">2026年11月7日</span>
+          <p>App Storeでの対応言語が「英語」と表示されていたのを、「日本語」に直しました。文字を長押ししたときのメニュー（コピー・ペーストなど）も日本語で表示されるようになりました。</p>
+        </li>
+        <li>
+          <span class="ver">バージョン 1.0</span><span class="date">2026年11月4日</span>
+          <p>App Storeで公開しました。</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="soft">
+    <div class="wrap">
+      <h2>よくある質問</h2>
+      <details>
+        <summary>どのメールで使えますか？</summary>
+        <p>Gmail、Yahoo!メール、iCloudメールのほか、IMAPに対応したメールで使えます。iOS 16.4以降のiPhoneに対応しています。</p>
+      </details>
+      <details>
+        <summary>新しいメールの通知は来ますか？</summary>
+        <p>通知は行いません。通知を送るには、メールを見張る開発者のサーバーが必要になるためです。急ぎの通知が必要な場合は、各メールサービスの公式アプリの通知と併用してください。</p>
+      </details>
+      <details>
+        <summary>ログインできません</summary>
+        <p>Gmail・iCloudは、ふだんのパスワードではなく「アプリ用パスワード」を使います。作り方は<a href="https://haruki-lo-shelon.github.io/chatdemail-privacy/support.html">サポートのページ</a>と、アプリの中の画像つきの手順でご案内しています。</p>
+      </details>
+      <details>
+        <summary>不具合や要望はどこに送ればいいですか？</summary>
+        <p><a href="mailto:harryworld.apps@gmail.com">harryworld.apps@gmail.com</a> までお送りください。開発者本人が読んでお返事します。お問い合わせのメールにパスワードは絶対に書かないでください。</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="wrap">
+      <h2>大事なメールを、もう見落とさない</h2>
+      <p class="lead">無料で始めて、14日間は全部の機能を試せます。</p>
+      <a class="btn" href="https://apps.apple.com/jp/app/id6824238650">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.37 12.73c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.75 2.28-1.6 2.78-.41 6.89 1.15 9.14.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.77.74 2.98.72 1.23-.02 2.01-1.12 2.76-2.23.87-1.28 1.23-2.52 1.25-2.58-.03-.01-2.4-.92-2.42-3.66zM14.1 5.98c.63-.77 1.06-1.83.94-2.89-.91.04-2.01.61-2.66 1.37-.58.67-1.09 1.75-.96 2.79 1.02.08 2.05-.52 2.68-1.27z"/></svg>
+        App Storeでダウンロード
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <p>
+        <a href="https://haruki-lo-shelon.github.io/chatdemail-privacy/">プライバシーポリシー</a>
+        <a href="https://haruki-lo-shelon.github.io/chatdemail-privacy/support.html">サポート</a>
+        <a href="mailto:harryworld.apps@gmail.com">お問い合わせ</a>
+      </p>
+      <p>© 2026 河﨑 晴己</p>
+    </div>
+  </footer>
+
+</body>
+</html>
